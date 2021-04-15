@@ -1,9 +1,9 @@
 // jshint multistr:true
 
-(function (w, d) {
+export default function (hljs) {
     'use strict';
 
-    var TABLE_NAME = 'hljs-ln',
+    const TABLE_NAME = 'hljs-ln',
         LINE_NAME = 'hljs-ln-line',
         CODE_BLOCK_NAME = 'hljs-ln-code',
         NUMBERS_BLOCK_NAME = 'hljs-ln-numbers',
@@ -11,18 +11,12 @@
         DATA_ATTR_NAME = 'data-line-number',
         BREAK_LINE_REGEXP = /\r\n|\r|\n/g;
 
-    if (w.hljs) {
-        w.hljs.initLineNumbersOnLoad = initLineNumbersOnLoad;
-        w.hljs.lineNumbersBlock = lineNumbersBlock;
-        w.hljs.lineNumbersValue = lineNumbersValue;
-
-        addStyles();
-    } else {
-        w.console.error('highlight.js not detected!');
-    }
+    if (!hljs) {
+		return console.error('highlight.js not detected!');
+	}
 
     function isHljsLnCodeDescendant(domElt) {
-        var curElt = domElt;
+        let curElt = domElt;
         while (curElt) {
             if (curElt.className && curElt.className.indexOf('hljs-ln-code') !== -1) {
                 return true;
@@ -33,7 +27,7 @@
     }
 
     function getHljsLnTable(hljsLnDomElt) {
-        var curElt = hljsLnDomElt;
+        let curElt = hljsLnDomElt;
         while (curElt.nodeName !== 'TABLE') {
             curElt = curElt.parentNode;
         }
@@ -47,33 +41,33 @@
     // rendered code in the DOM as reference.
     function edgeGetSelectedCodeLines(selection) {
         // current selected text without line breaks
-        var selectionText = selection.toString();
+        const selectionText = selection.toString();
 
         // get the <td> element wrapping the first line of selected code
-        var tdAnchor = selection.anchorNode;
+        let tdAnchor = selection.anchorNode;
         while (tdAnchor.nodeName !== 'TD') {
             tdAnchor = tdAnchor.parentNode;
         }
 
         // get the <td> element wrapping the last line of selected code
-        var tdFocus = selection.focusNode;
+        let tdFocus = selection.focusNode;
         while (tdFocus.nodeName !== 'TD') {
             tdFocus = tdFocus.parentNode;
         }
 
         // extract line numbers
-        var firstLineNumber = parseInt(tdAnchor.dataset.lineNumber);
-        var lastLineNumber = parseInt(tdFocus.dataset.lineNumber);
+        let firstLineNumber = parseInt(tdAnchor.dataset.lineNumber);
+        let lastLineNumber = parseInt(tdFocus.dataset.lineNumber);
 
         // multi-lines copied case
         if (firstLineNumber != lastLineNumber) {
 
-            var firstLineText = tdAnchor.textContent;
-            var lastLineText = tdFocus.textContent;
+            let firstLineText = tdAnchor.textContent;
+            let lastLineText = tdFocus.textContent;
 
             // if the selection was made backward, swap values
             if (firstLineNumber > lastLineNumber) {
-                var tmp = firstLineNumber;
+                let tmp = firstLineNumber;
                 firstLineNumber = lastLineNumber;
                 lastLineNumber = tmp;
                 tmp = firstLineText;
@@ -92,11 +86,11 @@
             }
 
             // reconstruct and return the real copied text
-            var selectedText = firstLineText;
-            var hljsLnTable = getHljsLnTable(tdAnchor);
-            for (var i = firstLineNumber + 1 ; i < lastLineNumber ; ++i) {
-                var codeLineSel = format('.{0}[{1}="{2}"]', [CODE_BLOCK_NAME, DATA_ATTR_NAME, i]);
-                var codeLineElt = hljsLnTable.querySelector(codeLineSel);
+            let selectedText = firstLineText;
+            const hljsLnTable = getHljsLnTable(tdAnchor);
+            for (let i = firstLineNumber + 1 ; i < lastLineNumber ; ++i) {
+                const codeLineSel = format('.{0}[{1}="{2}"]', [CODE_BLOCK_NAME, DATA_ATTR_NAME, i]);
+                const codeLineElt = hljsLnTable.querySelector(codeLineSel);
                 selectedText += '\n' + codeLineElt.textContent;
             }
             selectedText += '\n' + lastLineText;
@@ -111,10 +105,10 @@
     // (see https://github.com/wcoder/highlightjs-line-numbers.js/issues/51)
     document.addEventListener('copy', function(e) {
         // get current selection
-        var selection = window.getSelection();
+        const selection = window.getSelection();
         // override behavior when one wants to copy line of codes
         if (isHljsLnCodeDescendant(selection.anchorNode)) {
-            var selectionText;
+            let selectionText;
             // workaround an issue with Microsoft Edge as copied line breaks
             // are removed otherwise from the selection string
             if (window.navigator.userAgent.indexOf('Edge') !== -1) {
@@ -129,7 +123,7 @@
     });
 
     function addStyles () {
-        var css = d.createElement('style');
+        const css = document.createElement('style');
         css.type = 'text/css';
         css.innerHTML = format(
             '.{0}{border-collapse:collapse}' +
@@ -140,14 +134,14 @@
             NUMBER_LINE_NAME,
             DATA_ATTR_NAME
         ]);
-        d.getElementsByTagName('head')[0].appendChild(css);
+        document.getElementsByTagName('head')[0].appendChild(css);
     }
 
-    function initLineNumbersOnLoad (options) {
-        if (d.readyState === 'interactive' || d.readyState === 'complete') {
+    function initLineNumbers (options) {
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
             documentReady(options);
         } else {
-            w.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('DOMContentLoaded', function () {
                 documentReady(options);
             });
         }
@@ -155,9 +149,9 @@
 
     function documentReady (options) {
         try {
-            var blocks = d.querySelectorAll('code.hljs,code.nohighlight');
+            const blocks = document.querySelectorAll('code.hljs,code.nohighlight');
 
-            for (var i in blocks) {
+            for (let i in blocks) {
                 if (blocks.hasOwnProperty(i)) {
                     if (!isPluginDisabledForBlock(blocks[i])) {
                         lineNumbersBlock(blocks[i], options);
@@ -165,7 +159,7 @@
                 }
             }
         } catch (e) {
-            w.console.error('LineNumbers error: ', e);
+            console.error('LineNumbers error: ', e);
         }
     }
 
@@ -184,7 +178,7 @@
     function lineNumbersValue (value, options) {
         if (typeof value !== 'string') return;
 
-        var element = document.createElement('code')
+        const element = document.createElement('code')
         element.innerHTML = value
 
         return lineNumbersInternal(element, options);
@@ -192,7 +186,7 @@
 
     function lineNumbersInternal (element, options) {
 
-        var internalOptions = mapOptions(element, options);
+        const internalOptions = mapOptions(element, options);
 
         duplicateMultilineNodes(element);
 
@@ -200,7 +194,7 @@
     }
 
     function addLineNumbersBlockFor (inputHtml, options) {
-        var lines = getLines(inputHtml);
+        const lines = getLines(inputHtml);
 
         // if last line contains only carriage return remove it
         if (lines[lines.length-1].trim() === '') {
@@ -208,9 +202,9 @@
         }
 
         if (lines.length > 1 || options.singleLine) {
-            var html = '';
+            let html = '';
 
-            for (var i = 0, l = lines.length; i < l; i++) {
+            for (let i = 0, l = lines.length; i < l; i++) {
                 html += format(
                     '<tr>' +
                         '<td class="{0} {1}" {3}="{5}">' +
@@ -251,7 +245,7 @@
     }
 
     function getSingleLineOption (options) {
-        var defaultValue = false;
+        const defaultValue = false;
         if (!!options.singleLine) {
             return options.singleLine;
         }
@@ -259,15 +253,15 @@
     }
 
     function getStartFromOption (element, options) {
-        var defaultValue = 1;
-        var startFrom = defaultValue;
+        const defaultValue = 1;
+        let startFrom = defaultValue;
 
         if (isFinite(options.startFrom)) {
             startFrom = options.startFrom;
         }
 
         // can be overridden because local option is priority
-        var value = getAttribute(element, 'data-ln-start-from');
+        let value = getAttribute(element, 'data-ln-start-from');
         if (value !== null) {
             startFrom = toNumber(value, defaultValue);
         }
@@ -281,10 +275,10 @@
      * @param {HTMLElement} element
      */
     function duplicateMultilineNodes (element) {
-        var nodes = element.childNodes;
-        for (var node in nodes) {
+        const nodes = element.childNodes;
+        for (let node in nodes) {
             if (nodes.hasOwnProperty(node)) {
-                var child = nodes[node];
+                const child = nodes[node];
                 if (getLinesCount(child.textContent) > 0) {
                     if (child.childNodes.length > 0) {
                         duplicateMultilineNodes(child);
@@ -301,14 +295,14 @@
      * @param {HTMLElement} element
      */
     function duplicateMultilineNode (element) {
-        var className = element.className;
+        const className = element.className;
 
         if ( ! /hljs-/.test(className)) return;
 
-        var lines = getLines(element.innerHTML);
+        const lines = getLines(element.innerHTML);
 
-        for (var i = 0, result = ''; i < lines.length; i++) {
-            var lineText = lines[i].length > 0 ? lines[i] : ' ';
+        for (let i = 0, result = ''; i < lines.length; i++) {
+            const lineText = lines[i].length > 0 ? lines[i] : ' ';
             result += format('<span class="{0}">{1}</span>\n', [ className,  lineText ]);
         }
 
@@ -329,7 +323,7 @@
     ///
 
     function async (func) {
-        w.setTimeout(func, 0);
+        window.setTimeout(func, 0);
     }
 
     /**
@@ -359,8 +353,15 @@
      */
     function toNumber (str, fallback) {
         if (!str) return fallback;
-        var number = Number(str);
+        const number = Number(str);
         return isFinite(number) ? number : fallback;
     }
-
-}(window, document));
+	
+	addStyles();
+	
+	return {
+		initLineNumbers,
+		lineNumbersBlock,
+		lineNumbersValue,
+	}
+};
